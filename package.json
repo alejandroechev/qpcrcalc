@@ -1,0 +1,9 @@
+{
+  "name": "qpcrcalc",
+  "private": true,
+  "scripts": {
+    "test": "pnpm -r test",
+    "build": "pnpm -r build",
+    "dev": "pnpm --filter @qpcrcalc/web dev"
+  }
+}

@@ -1,0 +1,131 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a2e;
+  --surface: #f5f5f7;
+  --border: #d1d5db;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --error: #ef4444;
+  --warn: #f59e0b;
+  --ok: #22c55e;
+  --chart-1: #2563eb;
+  --chart-2: #7c3aed;
+  --chart-3: #059669;
+  --chart-4: #dc2626;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+[data-theme='dark'] {
+  --bg: #0f172a;
+  --fg: #e2e8f0;
+  --surface: #1e293b;
+  --border: #334155;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.6;
+}
+
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.toolbar h1 { font-size: 1.25rem; margin-right: auto; }
+.toolbar select, .toolbar button, .toolbar input {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+.toolbar button:hover { background: var(--accent); color: #fff; }
+.toolbar label { font-size: 0.8rem; display: flex; align-items: center; gap: 0.25rem; }
+
+/* Data Entry */
+.data-entry { margin-bottom: 1rem; }
+.data-entry textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 0.75rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--fg);
+  resize: vertical;
+}
+.data-entry .hint { font-size: 0.75rem; color: var(--border); margin-top: 0.25rem; }
+
+/* Results layout */
+.results { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 800px) {
+  .results { grid-template-columns: 1fr 1fr; }
+}
+
+/* Chart */
+.chart-panel {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1rem;
+}
+.chart-panel h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+
+/* Table */
+.table-panel {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+.table-panel h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.results-table th, .results-table td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+}
+.results-table th { font-weight: 600; }
+.results-table .flag-ok { color: var(--ok); }
+.results-table .flag-warn { color: var(--warn); }
+.results-table .flag-err { color: var(--error); }
+
+/* Expandable rows */
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 0.9rem;
+  padding: 0;
+}
+.replicate-row td { padding-left: 2rem; font-size: 0.8rem; color: var(--border); }
+
+/* Multi-select for reference genes */
+.ref-genes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ref-genes label { display: flex; align-items: center; gap: 0.2rem; font-size: 0.8rem; }
