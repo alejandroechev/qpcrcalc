@@ -91,6 +91,12 @@ export function App() {
     );
   };
 
+  const handleLoadSample = useCallback((csv: string, refs: string[], control: string) => {
+    setRawText(csv);
+    setRefGenes(refs);
+    setControlGroup(control);
+  }, []);
+
   return (
     <div className="app" data-theme={dark ? 'dark' : 'light'}>
       <Toolbar
@@ -104,6 +110,7 @@ export function App() {
         onSetControl={setControlGroup}
         onExportCsv={handleExportCsv}
         onExportPng={handleExportPng}
+        onLoadSample={handleLoadSample}
       />
       <DataEntry value={rawText} onChange={setRawText} />
       {result && (

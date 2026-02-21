@@ -1,3 +1,5 @@
+import { sampleDatasets } from '../samples/index.ts';
+
 interface ToolbarProps {
   dark: boolean;
   onToggleDark: () => void;
@@ -9,6 +11,7 @@ interface ToolbarProps {
   onSetControl: (s: string) => void;
   onExportCsv: () => void;
   onExportPng: () => void;
+  onLoadSample: (csv: string, refGenes: string[], controlGroup: string) => void;
 }
 
 export function Toolbar({
@@ -22,6 +25,7 @@ export function Toolbar({
   onSetControl,
   onExportCsv,
   onExportPng,
+  onLoadSample,
 }: ToolbarProps) {
   return (
     <div className="toolbar" data-theme={dark ? 'dark' : 'light'}>
@@ -46,6 +50,22 @@ export function Toolbar({
         <select value={controlGroup} onChange={e => onSetControl(e.target.value)}>
           {samples.map(s => (
             <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+      </label>
+
+      <label>
+        📂 Samples:
+        <select
+          value=""
+          onChange={e => {
+            const ds = sampleDatasets[Number(e.target.value)];
+            if (ds) onLoadSample(ds.csv, ds.refGenes, ds.controlGroup);
+          }}
+        >
+          <option value="" disabled>Load…</option>
+          {sampleDatasets.map((ds, i) => (
+            <option key={ds.name} value={i}>{ds.name}</option>
           ))}
         </select>
       </label>
