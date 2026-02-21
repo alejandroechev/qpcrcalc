@@ -52,6 +52,7 @@ export function Toolbar({
 
       <button onClick={onExportCsv}>📥 CSV</button>
       <button onClick={onExportPng}>📸 PNG</button>
+      <button onClick={() => window.open('/intro.html', '_blank')}>📖 Guide</button>
       <button onClick={onToggleDark}>{dark ? '☀️' : '🌙'}</button>
     </div>
   );

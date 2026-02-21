@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>qPCRCalc — Guide to qPCR &amp; the ΔΔCt Method</title>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a2e; --muted: #555; --accent: #2563eb;
+    --card-bg: #f8f9fa; --border: #dee2e6; --code-bg: #eef1f5;
+    --heading: #0f172a; --eq-bg: #f0f4ff; --eq-border: #bfdbfe;
+    --table-head: #e2e8f0; --table-stripe: #f8fafc;
+    --badge-bg: #dbeafe; --badge-fg: #1e40af;
+  }
+  [data-theme="dark"] {
+    --bg: #0f172a; --fg: #e2e8f0; --muted: #94a3b8; --accent: #60a5fa;
+    --card-bg: #1e293b; --border: #334155; --code-bg: #1e293b;
+    --heading: #f1f5f9; --eq-bg: #1e293b; --eq-border: #334155;
+    --table-head: #334155; --table-stripe: #1e293b;
+    --badge-bg: #1e3a5f; --badge-fg: #93c5fd;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--fg); line-height: 1.7;
+  }
+  .container { max-width: 800px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+  }
+  .back-link:hover { text-decoration: underline; }
+  .hero {
+    text-align: center; padding: 3rem 0 2rem; border-bottom: 1px solid var(--border);
+    margin-bottom: 2.5rem;
+  }
+  .hero h1 { font-size: 2.4rem; color: var(--heading); margin-bottom: 0.3rem; }
+  .hero .tagline { font-size: 1.1rem; color: var(--muted); }
+  h2 {
+    font-size: 1.5rem; color: var(--heading); margin: 2.5rem 0 0.8rem;
+    padding-bottom: 0.3rem; border-bottom: 2px solid var(--accent);
+    display: inline-block;
+  }
+  h3 { font-size: 1.15rem; color: var(--heading); margin: 1.5rem 0 0.5rem; }
+  p { margin-bottom: 1rem; }
+  ul, ol { margin: 0 0 1rem 1.5rem; }
+  li { margin-bottom: 0.35rem; }
+  code {
+    background: var(--code-bg); padding: 0.15em 0.4em; border-radius: 3px;
+    font-size: 0.9em; font-family: 'Cascadia Code', 'Fira Code', monospace;
+  }
+  .equation {
+    background: var(--eq-bg); border-left: 4px solid var(--eq-border);
+    padding: 0.8rem 1.2rem; margin: 1rem 0; border-radius: 4px;
+    font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 0.95rem;
+    overflow-x: auto;
+  }
+  .card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.2rem 1.5rem; margin: 1rem 0;
+  }
+  .badge {
+    display: inline-block; background: var(--badge-bg); color: var(--badge-fg);
+    padding: 0.15em 0.55em; border-radius: 4px; font-size: 0.82rem;
+    font-weight: 600; margin-right: 0.3rem;
+  }
+  table {
+    width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.92rem;
+  }
+  th {
+    background: var(--table-head); text-align: left; padding: 0.6rem 0.8rem;
+    font-weight: 600; border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 0.5rem 0.8rem; border-bottom: 1px solid var(--border);
+  }
+  tr:nth-child(even) td { background: var(--table-stripe); }
+  .step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 1.6rem; height: 1.6rem; background: var(--accent); color: #fff;
+    border-radius: 50%; font-size: 0.85rem; font-weight: 700;
+    margin-right: 0.5rem; flex-shrink: 0;
+  }
+  .step { display: flex; align-items: flex-start; margin-bottom: 0.8rem; }
+  .step p { margin: 0; }
+  .warn {
+    background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.8rem 1.2rem;
+    border-radius: 4px; margin: 1rem 0; font-size: 0.93rem;
+  }
+  [data-theme="dark"] .warn { background: #422006; border-left-color: #d97706; }
+  .theme-toggle {
+    position: fixed; top: 1rem; right: 1rem; background: var(--card-bg);
+    border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem 0.7rem;
+    cursor: pointer; font-size: 1.1rem; z-index: 10;
+  }
+  .refs { font-size: 0.9rem; }
+  .refs li { margin-bottom: 0.5rem; }
+  @media (max-width: 600px) {
+    .container { padding: 1rem; }
+    .hero h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.25rem; }
+  }
+</style>
+</head>
+<body data-theme="light">
+<button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark theme">🌙</button>
+<div class="container">
+<a href="/" class="back-link">← Back to qPCRCalc</a>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>📊 qPCRCalc</h1>
+  <p class="tagline">Free, browser-based qPCR delta-delta-Ct fold change analysis</p>
+</div>
+
+<!-- 1. What is qPCR? -->
+<h2>1. What is qPCR?</h2>
+
+<h3>PCR Basics</h3>
+<p>
+  Polymerase chain reaction (PCR) amplifies a specific DNA sequence through repeated cycles
+  of denaturation, annealing, and extension. Each cycle roughly doubles the target, producing
+  an exponential increase in copy number.
+</p>
+
+<h3>Quantitative Real-Time PCR</h3>
+<p>
+  Quantitative PCR (qPCR) adds a fluorescent reporter to standard PCR so that amplification
+  can be monitored <em>in real time</em>, cycle by cycle. Fluorescence intensity is
+  proportional to the amount of amplified product.
+</p>
+<p>
+  Common chemistries include <strong>SYBR Green</strong> (intercalating dye, binds any
+  double-stranded DNA) and <strong>TaqMan probes</strong> (sequence-specific hydrolysis probes
+  with a fluorophore and quencher).
+</p>
+
+<h3>Amplification Curves &amp; the Ct Value</h3>
+<p>
+  A plot of fluorescence vs. cycle number produces a sigmoidal <strong>amplification curve</strong>.
+  The <strong>Ct</strong> (cycle threshold) — also called <strong>Cq</strong> — is the fractional
+  cycle number at which fluorescence crosses a defined threshold in the exponential phase.
+</p>
+<div class="card">
+  <strong>Key insight:</strong> Lower Ct = more starting template. A Ct difference of 1 cycle
+  corresponds to roughly a 2-fold difference in initial quantity (assuming 100% efficiency).
+</div>
+
+<!-- 2. The ΔΔCt Method -->
+<h2>2. The ΔΔCt Method (Livak)</h2>
+<p>
+  The <strong>ΔΔCt method</strong>, published by Livak &amp; Schmittgen (2001), is the most widely
+  used approach for calculating relative gene expression changes. It compares a target gene's
+  expression between experimental and control samples, normalized to a reference (housekeeping) gene.
+</p>
+
+<h3>Step 1 — Calculate ΔCt</h3>
+<p>For each sample, subtract the reference gene Ct from the target gene Ct:</p>
+<div class="equation">ΔCt = Ct<sub>target</sub> − Ct<sub>reference</sub></div>
+<p>This normalizes for differences in cDNA input between samples.</p>
+
+<h3>Step 2 — Calculate ΔΔCt</h3>
+<p>Subtract the mean ΔCt of the control group from each sample's ΔCt:</p>
+<div class="equation">ΔΔCt = ΔCt<sub>sample</sub> − mean(ΔCt<sub>control</sub>)</div>
+<p>This expresses each sample's expression relative to the control baseline.</p>
+
+<h3>Step 3 — Calculate Fold Change</h3>
+<p>Convert to a linear fold change value:</p>
+<div class="equation">Fold Change = 2<sup>−ΔΔCt</sup></div>
+<p>
+  A fold change of 1.0 means no change from control. Values &gt; 1 indicate upregulation;
+  values &lt; 1 indicate downregulation. For example, fold change = 4 means the gene is
+  expressed 4× higher in the sample than in the control.
+</p>
+
+<!-- 3. Reference Genes -->
+<h2>3. Reference Genes</h2>
+<p>
+  Reference genes (also called housekeeping genes or endogenous controls) are genes assumed
+  to be expressed at a constant level across all experimental conditions. They serve as
+  internal normalizers to correct for sample-to-sample variation in RNA extraction, reverse
+  transcription efficiency, and cDNA loading.
+</p>
+
+<h3>Common Reference Genes</h3>
+<table>
+  <thead>
+    <tr><th>Gene</th><th>Full Name</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>GAPDH</code></td><td>Glyceraldehyde-3-phosphate dehydrogenase</td><td>Most widely used; varies in some tissues</td></tr>
+    <tr><td><code>ACTB</code> (β-actin)</td><td>Beta-actin</td><td>Good general reference; can shift with cytoskeleton changes</td></tr>
+    <tr><td><code>18S rRNA</code></td><td>18S ribosomal RNA</td><td>Very abundant; may not match mRNA dynamics</td></tr>
+    <tr><td><code>B2M</code></td><td>Beta-2-microglobulin</td><td>Stable in many cell types</td></tr>
+    <tr><td><code>RPL13A</code></td><td>Ribosomal protein L13a</td><td>Recommended for some tissue panels</td></tr>
+  </tbody>
+</table>
+
+<h3>Choosing a Reference Gene</h3>
+<ul>
+  <li>Verify stable expression across your experimental conditions</li>
+  <li>Use validation tools (geNorm, NormFinder, BestKeeper) when possible</li>
+  <li>Using <strong>multiple reference genes</strong> (geometric mean) improves reliability</li>
+  <li>Never assume a gene is stable — always validate empirically</li>
+</ul>
+
+<!-- 4. Quality Control -->
+<h2>4. Quality Control</h2>
+
+<h3>Replicate Consistency (CV%)</h3>
+<p>
+  The coefficient of variation (<strong>CV%</strong>) measures replicate reproducibility.
+  qPCRCalc flags replicates automatically:
+</p>
+<table>
+  <thead>
+    <tr><th>CV%</th><th>Status</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>≤ 2%</td><td><span class="badge" style="background:#d1fae5;color:#065f46">Good</span></td><td>Acceptable — proceed</td></tr>
+    <tr><td>2–5%</td><td><span class="badge" style="background:#fef3c7;color:#92400e">Suspicious</span></td><td>Review replicates; consider re-running</td></tr>
+    <tr><td>&gt; 5%</td><td><span class="badge" style="background:#fee2e2;color:#991b1b">Unreliable</span></td><td>Discard or investigate pipetting error</td></tr>
+  </tbody>
+</table>
+
+<h3>High Ct Values</h3>
+<div class="warn">
+  <strong>⚠ Ct &gt; 35:</strong> At very high cycle numbers, amplification curves flatten and
+  non-specific products or primer dimers can dominate. Ct values above 35 should be interpreted
+  with caution — they may indicate very low expression, failed reactions, or absent template.
+</div>
+
+<h3>Other QC Checks</h3>
+<ul>
+  <li><strong>No-template controls (NTC)</strong> should show no amplification or Ct &gt; 38</li>
+  <li><strong>Melt curve analysis</strong> (SYBR Green) — single peak confirms specificity</li>
+  <li><strong>Amplification efficiency</strong> — ideally 90–110% from a standard curve</li>
+</ul>
+
+<!-- 5. Error Propagation -->
+<h2>5. Error Propagation</h2>
+
+<h3>SEM Calculation</h3>
+<p>
+  The standard error of the mean (SEM) quantifies uncertainty in the mean ΔCt across
+  biological replicates:
+</p>
+<div class="equation">SEM = SD / √n</div>
+<p>where SD is the standard deviation of ΔCt values and n is the number of replicates.</p>
+
+<h3>Fold Change Error Bars</h3>
+<p>
+  Because fold change is computed via exponentiation (2<sup>−ΔΔCt</sup>), error bars are
+  propagated through the power function:
+</p>
+<div class="equation">
+Upper bound = 2<sup>−(ΔΔCt − SEM)</sup><br />
+Lower bound = 2<sup>−(ΔΔCt + SEM)</sup>
+</div>
+
+<h3>Why Are Error Bars Asymmetric?</h3>
+<p>
+  The exponential transformation converts a symmetric interval on the log scale (ΔΔCt ± SEM)
+  into an <em>asymmetric</em> interval on the linear scale. This is expected and correct — it
+  reflects the multiplicative nature of fold changes. The upper bar is always wider than the
+  lower bar.
+</p>
+
+<!-- 6. Assumptions -->
+<h2>6. Assumptions &amp; Limitations</h2>
+
+<div class="card">
+  <h3 style="margin-top:0">The ΔΔCt method assumes:</h3>
+  <ol>
+    <li><strong>100% amplification efficiency</strong> — each cycle exactly doubles the target. The factor "2" in 2<sup>−ΔΔCt</sup> comes from this assumption.</li>
+    <li><strong>Equal efficiency</strong> for target and reference genes.</li>
+    <li><strong>Stable reference gene</strong> expression across all conditions.</li>
+    <li><strong>Linear dynamic range</strong> — Ct values fall in the exponential amplification phase.</li>
+  </ol>
+</div>
+
+<h3>When ΔΔCt Breaks Down</h3>
+<ul>
+  <li><strong>Unequal efficiencies:</strong> If target and reference differ by &gt; 5%, use the
+    Pfaffl method: Fold = (E<sub>target</sub>)<sup>ΔCt_target</sup> / (E<sub>ref</sub>)<sup>ΔCt_ref</sup></li>
+  <li><strong>Very low expression:</strong> Ct &gt; 35 introduces stochastic noise</li>
+  <li><strong>Unstable reference:</strong> Results are only as good as your normalizer</li>
+  <li><strong>Non-biological variation:</strong> Batch effects, plate-to-plate variation need careful experimental design</li>
+</ul>
+
+<!-- 7. How to Use qPCRCalc -->
+<h2>7. How to Use qPCRCalc</h2>
+
+<div class="step"><span class="step-num">1</span><p><strong>Prepare your data</strong> as a CSV or tab-separated table with columns: <code>Sample</code>, <code>Gene</code>, <code>Ct</code>. Include replicates as separate rows with the same Sample+Gene combination.</p></div>
+
+<div class="step"><span class="step-num">2</span><p><strong>Paste or type</strong> your data into the data entry area. qPCRCalc auto-detects columns and replicates.</p></div>
+
+<div class="step"><span class="step-num">3</span><p><strong>Select reference gene(s)</strong> using the checkboxes in the toolbar. If you select multiple, their geometric mean is used for normalization.</p></div>
+
+<div class="step"><span class="step-num">4</span><p><strong>Set the control group</strong> from the dropdown. This defines the baseline for ΔΔCt calculation.</p></div>
+
+<div class="step"><span class="step-num">5</span><p><strong>View results</strong> — the fold change bar chart and results table update automatically. QC flags highlight problematic replicates.</p></div>
+
+<div class="step"><span class="step-num">6</span><p><strong>Export</strong> — download your results as CSV or save the chart as PNG for publications.</p></div>
+
+<!-- 8. Glossary -->
+<h2>8. Glossary</h2>
+<table>
+  <thead>
+    <tr><th>Term</th><th>Definition</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Ct</strong> (Cq)</td><td>Cycle threshold — the fractional PCR cycle at which fluorescence crosses the detection threshold</td></tr>
+    <tr><td><strong>ΔCt</strong></td><td>Delta Ct — difference between target and reference gene Ct within one sample</td></tr>
+    <tr><td><strong>ΔΔCt</strong></td><td>Delta-delta Ct — ΔCt of sample minus mean ΔCt of control group</td></tr>
+    <tr><td><strong>Fold Change</strong></td><td>Relative expression ratio, calculated as 2<sup>−ΔΔCt</sup></td></tr>
+    <tr><td><strong>Reference Gene</strong></td><td>A stably expressed gene used to normalize for input variation (e.g., GAPDH, β-actin)</td></tr>
+    <tr><td><strong>CV%</strong></td><td>Coefficient of variation — (SD / mean) × 100; measures replicate consistency</td></tr>
+    <tr><td><strong>SEM</strong></td><td>Standard error of the mean — SD / √n; quantifies uncertainty in the mean</td></tr>
+    <tr><td><strong>Housekeeping Gene</strong></td><td>Synonym for reference gene</td></tr>
+    <tr><td><strong>NTC</strong></td><td>No-template control — a negative control with no DNA input</td></tr>
+    <tr><td><strong>Amplification Efficiency</strong></td><td>Fraction of target molecules replicated per cycle; ideally 100% (factor of 2)</td></tr>
+  </tbody>
+</table>
+
+<!-- 9. References -->
+<h2>9. References</h2>
+<ol class="refs">
+  <li>Livak, K.J. &amp; Schmittgen, T.D. (2001). Analysis of relative gene expression data using
+    real-time quantitative PCR and the 2<sup>−ΔΔCt</sup> method. <em>Methods</em>, 25(4), 402–408.
+    <a href="https://doi.org/10.1006/meth.2001.1262" target="_blank" rel="noopener">doi:10.1006/meth.2001.1262</a></li>
+  <li>Schmittgen, T.D. &amp; Livak, K.J. (2008). Analyzing real-time PCR data by the comparative
+    C<sub>T</sub> method. <em>Nature Protocols</em>, 3(6), 1101–1108.
+    <a href="https://doi.org/10.1038/nprot.2008.73" target="_blank" rel="noopener">doi:10.1038/nprot.2008.73</a></li>
+  <li>Pfaffl, M.W. (2001). A new mathematical model for relative quantification in real-time
+    RT-PCR. <em>Nucleic Acids Research</em>, 29(9), e45.
+    <a href="https://doi.org/10.1093/nar/29.9.e45" target="_blank" rel="noopener">doi:10.1093/nar/29.9.e45</a></li>
+  <li>Vandesompele, J. et al. (2002). Accurate normalization of real-time quantitative RT-PCR
+    data by geometric averaging of multiple internal control genes. <em>Genome Biology</em>, 3(7).
+    <a href="https://doi.org/10.1186/gb-2002-3-7-research0034" target="_blank" rel="noopener">doi:10.1186/gb-2002-3-7-research0034</a></li>
+  <li>Bio-Rad Laboratories. <em>Real-Time PCR Applications Guide</em>.
+    <a href="https://www.bio-rad.com/en-us/applications-technologies/real-time-pcr-qpcr" target="_blank" rel="noopener">bio-rad.com</a></li>
+</ol>
+
+<hr style="margin: 3rem 0 1.5rem; border: none; border-top: 1px solid var(--border);" />
+<p style="text-align:center; color: var(--muted); font-size: 0.85rem;">
+  qPCRCalc is free and open-source. No data leaves your browser.
+</p>
+</div>
+
+<script>
+function toggleTheme() {
+  const body = document.body;
+  const btn = document.querySelector('.theme-toggle');
+  if (body.getAttribute('data-theme') === 'dark') {
+    body.setAttribute('data-theme', 'light');
+    btn.textContent = '🌙';
+  } else {
+    body.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️';
+  }
+}
+</script>
+</body>
+</html>
