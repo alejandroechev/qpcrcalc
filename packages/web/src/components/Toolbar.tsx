@@ -40,6 +40,8 @@ export function Toolbar({
       {/* Row 1: title + Samples + Upload + spacer + Guide + Feedback + Theme */}
       <div className="toolbar-row">
         <h1>qPCRCalc</h1>
+        <button data-testid="upload-btn" onClick={() => fileRef.current?.click()}>📂 Upload</button>
+        <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" onChange={handleFile} hidden />
         <select
           data-testid="samples-select"
           value=""
@@ -53,8 +55,6 @@ export function Toolbar({
             <option key={ds.name} value={i}>{ds.name}</option>
           ))}
         </select>
-        <button data-testid="upload-btn" onClick={() => fileRef.current?.click()}>📂 Upload</button>
-        <input ref={fileRef} type="file" accept=".csv,.tsv,.txt" onChange={handleFile} hidden />
         <div className="toolbar-spacer" />
         <button onClick={() => window.open('/intro.html', '_blank')}>📖 Guide</button>
         <button onClick={() => window.open('https://github.com/alejandroechev/qpcrcalc/issues/new', '_blank')} title="Feedback">💬 Feedback</button>

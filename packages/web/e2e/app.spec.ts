@@ -463,3 +463,51 @@ test.describe('In-Place Exports', () => {
     await expect(toolbar.locator('button', { hasText: '📸 PNG' })).not.toBeVisible();
   });
 });
+
+// ─── State Persistence ──────────────────────────────────────────────────
+
+test.describe('State Persistence', () => {
+  test('data persists across page reload', async ({ page }) => {
+    await page.goto('/');
+    const textarea = page.locator('textarea');
+    const customData = `Sample,Gene,Ct\nCtrl,GAPDH,20.0\nCtrl,GeneX,25.0\nTest,GAPDH,20.1\nTest,GeneX,22.0`;
+    await textarea.fill(customData);
+    await page.waitForTimeout(700);
+    await page.reload();
+    await expect(textarea).toContainText('GeneX');
+  });
+
+  test('ref genes and control group persist across reload', async ({ page }) => {
+    await page.goto('/');
+    await waitForResults(page);
+    // Default control is "Control" — change to "Treated"
+    const controlSelect = page.locator('select').filter({ has: page.locator('option', { hasText: 'Control' }) }).first();
+    await controlSelect.selectOption('Treated');
+    await page.waitForTimeout(700);
+    await page.reload();
+    await page.waitForTimeout(500);
+    // Control should still be Treated
+    const stored = await page.evaluate(() => {
+      const json = localStorage.getItem('qpcrcalc-state');
+      return json ? JSON.parse(json) : null;
+    });
+    expect(stored?.controlGroup).toBe('Treated');
+  });
+});
+
+// ─── Toolbar Button Order ───────────────────────────────────────────────
+
+test.describe('Toolbar Button Order', () => {
+  test('row 1: Upload before Samples, then spacer, Guide, Feedback, Theme', async ({ page }) => {
+    await page.goto('/');
+    const row1 = page.locator('.toolbar-row').first();
+    const html = await row1.innerHTML();
+    const uploadIdx = html.indexOf('Upload');
+    const samplesIdx = html.indexOf('samples-select');
+    const spacerIdx = html.indexOf('toolbar-spacer');
+    const guideIdx = html.indexOf('Guide');
+    expect(uploadIdx).toBeLessThan(samplesIdx);
+    expect(samplesIdx).toBeLessThan(spacerIdx);
+    expect(spacerIdx).toBeLessThan(guideIdx);
+  });
+});

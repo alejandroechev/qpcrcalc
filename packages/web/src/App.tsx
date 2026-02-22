@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   analyze,
   parseCt,
@@ -30,6 +30,16 @@ Treated,TP53,26.5
 Treated,TP53,26.7
 Treated,TP53,26.6`;
 
+const STORAGE_KEY = 'qpcrcalc-state';
+
+function loadSavedState(): { rawText: string; refGenes: string[]; controlGroup: string } | null {
+  try {
+    const json = localStorage.getItem(STORAGE_KEY);
+    if (!json) return null;
+    return JSON.parse(json);
+  } catch { return null; }
+}
+
 function loadTheme(): boolean {
   try {
     return localStorage.getItem('qpcrcalc-theme') === 'dark';
@@ -39,9 +49,10 @@ function loadTheme(): boolean {
 }
 
 export function App() {
-  const [rawText, setRawText] = useState(DEMO_CSV);
-  const [refGenes, setRefGenes] = useState<string[]>(['GAPDH']);
-  const [controlGroup, setControlGroup] = useState('Control');
+  const savedState = loadSavedState();
+  const [rawText, setRawText] = useState(savedState?.rawText ?? DEMO_CSV);
+  const [refGenes, setRefGenes] = useState<string[]>(savedState?.refGenes ?? ['GAPDH']);
+  const [controlGroup, setControlGroup] = useState(savedState?.controlGroup ?? 'Control');
   const [dark, setDark] = useState(loadTheme);
 
   const toggleDark = useCallback(() => {
@@ -51,6 +62,14 @@ export function App() {
       return next;
     });
   }, []);
+
+  // Debounced persistence
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ rawText, refGenes, controlGroup })); } catch { /* noop */ }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [rawText, refGenes, controlGroup]);
 
   // Derive available genes and samples from parsed data
   const { genes, samples } = useMemo(() => {
