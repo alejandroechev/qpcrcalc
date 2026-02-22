@@ -4,8 +4,7 @@
 
 Replace instrument-locked vendor software with a free, open-source web tool for qPCR relative quantification using the Livak & Schmittgen (2001) method.
 
-![qPCRCalc screenshot](docs/screenshot.png)
-<!-- TODO: replace with actual screenshot -->
+![qPCRCalc Screenshot](docs/screenshot.png)
 
 ---
 
