@@ -59,8 +59,13 @@ export function App() {
     setDark(d => {
       const next = !d;
       try { localStorage.setItem('qpcrcalc-theme', next ? 'dark' : 'light'); } catch { /* noop */ }
+      document.documentElement.setAttribute('data-theme', next ? 'dark' : 'light');
       return next;
     });
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   }, []);
 
   // Debounced persistence
