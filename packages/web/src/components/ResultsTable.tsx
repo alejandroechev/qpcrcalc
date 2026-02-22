@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { Fragment, useState, useCallback } from 'react';
 import type { DeltaDeltaCtResult, ReplicateGroup } from '@qpcrcalc/engine';
 import { exportCsv } from '@qpcrcalc/engine';
 
@@ -59,8 +59,8 @@ export function ResultsTable({ results, groups }: ResultsTableProps) {
             const grp = groups.find(g => g.sample === r.sample && g.gene === r.gene);
             const isExpanded = expanded.has(key);
             return (
-              <>
-                <tr key={key}>
+              <Fragment key={key}>
+                <tr>
                   <td>
                     {grp && grp.n > 0 && (
                       <button className="expand-btn" onClick={() => toggle(key)}>
@@ -87,7 +87,7 @@ export function ResultsTable({ results, groups }: ResultsTableProps) {
                       <td colSpan={5}>Ct = {ct.toFixed(2)}</td>
                     </tr>
                   ))}
-              </>
+              </Fragment>
             );
           })}
         </tbody>
