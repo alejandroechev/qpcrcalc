@@ -73,6 +73,7 @@ export function Toolbar({
       <button onClick={onExportCsv}>📥 CSV</button>
       <button onClick={onExportPng}>📸 PNG</button>
       <button onClick={() => window.open('/intro.html', '_blank')}>📖 Guide</button>
+      <button onClick={() => window.open('https://github.com/alejandroechev/qpcrcalc/issues/new', '_blank')} title="Feedback">💬 Feedback</button>
       <button onClick={onToggleDark}>{dark ? '☀️' : '🌙'}</button>
     </div>
   );
