@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import type { DeltaDeltaCtResult, ReplicateGroup } from '@qpcrcalc/engine';
+import { exportCsv } from '@qpcrcalc/engine';
 
 interface ResultsTableProps {
   results: DeltaDeltaCtResult[];
@@ -22,9 +23,23 @@ export function ResultsTable({ results, groups }: ResultsTableProps) {
     return 'flag-ok';
   };
 
+  const handleExportCsv = useCallback(() => {
+    const csv = exportCsv(results);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'qpcrcalc_results.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [results]);
+
   return (
     <div className="table-panel">
-      <h2>Results</h2>
+      <div className="panel-header">
+        <h2>Results</h2>
+        <button className="inline-btn" data-testid="results-csv-btn" onClick={handleExportCsv}>📥 CSV</button>
+      </div>
       <table className="results-table">
         <thead>
           <tr>

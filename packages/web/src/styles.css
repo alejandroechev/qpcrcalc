@@ -8,10 +8,14 @@
   --error: #ef4444;
   --warn: #f59e0b;
   --ok: #22c55e;
+  --muted: #6b7280;
   --chart-1: #2563eb;
   --chart-2: #7c3aed;
   --chart-3: #059669;
   --chart-4: #dc2626;
+  --tooltip-bg: #ffffff;
+  --tooltip-fg: #1a1a2e;
+  --tooltip-border: #d1d5db;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -22,6 +26,10 @@
   --border: #334155;
   --accent: #3b82f6;
   --accent-hover: #60a5fa;
+  --muted: #94a3b8;
+  --tooltip-bg: #1e293b;
+  --tooltip-fg: #e2e8f0;
+  --tooltip-border: #475569;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,21 +44,29 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
 }
 
 /* Toolbar */
 .toolbar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
   background: var(--surface);
   border-radius: 8px;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
 }
-.toolbar h1 { font-size: 1.25rem; margin-right: auto; }
-.toolbar select, .toolbar button, .toolbar input {
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+}
+.toolbar-row:first-child { padding-top: 0.75rem; }
+.toolbar-row:last-child { padding-bottom: 0.75rem; }
+.toolbar-row + .toolbar-row { border-top: 1px solid var(--border); }
+.toolbar h1 { font-size: 1.25rem; white-space: nowrap; }
+.toolbar-spacer { flex: 1; }
+.toolbar select, .toolbar button {
   padding: 0.4rem 0.75rem;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -58,6 +74,9 @@ body {
   color: var(--fg);
   font-size: 0.875rem;
   cursor: pointer;
+}
+.toolbar input[type="checkbox"] {
+  accent-color: var(--accent);
 }
 .toolbar button:hover { background: var(--accent); color: #fff; }
 .toolbar label { font-size: 0.8rem; display: flex; align-items: center; gap: 0.25rem; }
@@ -76,7 +95,7 @@ body {
   color: var(--fg);
   resize: vertical;
 }
-.data-entry .hint { font-size: 0.75rem; color: var(--border); margin-top: 0.25rem; }
+.data-entry .hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.25rem; }
 
 /* Results layout */
 .results { display: grid; grid-template-columns: 1fr; gap: 1rem; }
@@ -90,7 +109,22 @@ body {
   border-radius: 8px;
   padding: 1rem;
 }
-.chart-panel h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+.chart-panel .panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.chart-panel h2 { font-size: 1rem; margin: 0; }
+.recharts-default-tooltip {
+  background-color: var(--tooltip-bg) !important;
+  border-color: var(--tooltip-border) !important;
+  color: var(--tooltip-fg) !important;
+}
+.recharts-tooltip-item { color: var(--tooltip-fg) !important; }
+.recharts-cartesian-grid line { stroke: var(--border); }
+.recharts-text { fill: var(--fg); }
+.recharts-legend-item-text { color: var(--fg) !important; }
 
 /* Table */
 .table-panel {
@@ -99,7 +133,13 @@ body {
   padding: 1rem;
   overflow-x: auto;
 }
-.table-panel h2 { font-size: 1rem; margin-bottom: 0.5rem; }
+.table-panel .panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.table-panel h2 { font-size: 1rem; margin: 0; }
 .results-table {
   width: 100%;
   border-collapse: collapse;
@@ -110,7 +150,7 @@ body {
   padding: 0.4rem 0.6rem;
   border-bottom: 1px solid var(--border);
 }
-.results-table th { font-weight: 600; }
+.results-table th { font-weight: 600; color: var(--fg); }
 .results-table .flag-ok { color: var(--ok); }
 .results-table .flag-warn { color: var(--warn); }
 .results-table .flag-err { color: var(--error); }
@@ -124,8 +164,30 @@ body {
   font-size: 0.9rem;
   padding: 0;
 }
-.replicate-row td { padding-left: 2rem; font-size: 0.8rem; color: var(--border); }
+.replicate-row td { padding-left: 2rem; font-size: 0.8rem; color: var(--muted); }
 
 /* Multi-select for reference genes */
-.ref-genes { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.ref-genes { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
 .ref-genes label { display: flex; align-items: center; gap: 0.2rem; font-size: 0.8rem; }
+
+/* Inline export buttons */
+.inline-btn {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--fg);
+  font-size: 0.75rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.inline-btn:hover { background: var(--accent); color: #fff; }
+
+/* Data entry inline export */
+.data-entry .panel-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.data-entry .panel-header .hint { margin: 0; }

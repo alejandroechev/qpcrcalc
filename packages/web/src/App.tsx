@@ -3,7 +3,6 @@ import {
   analyze,
   parseCt,
   groupReplicates,
-  exportCsv,
   type AnalysisResult,
 } from '@qpcrcalc/engine';
 import { Toolbar } from './components/Toolbar.tsx';
@@ -31,11 +30,27 @@ Treated,TP53,26.5
 Treated,TP53,26.7
 Treated,TP53,26.6`;
 
+function loadTheme(): boolean {
+  try {
+    return localStorage.getItem('qpcrcalc-theme') === 'dark';
+  } catch {
+    return false;
+  }
+}
+
 export function App() {
   const [rawText, setRawText] = useState(DEMO_CSV);
   const [refGenes, setRefGenes] = useState<string[]>(['GAPDH']);
   const [controlGroup, setControlGroup] = useState('Control');
-  const [dark, setDark] = useState(false);
+  const [dark, setDark] = useState(loadTheme);
+
+  const toggleDark = useCallback(() => {
+    setDark(d => {
+      const next = !d;
+      try { localStorage.setItem('qpcrcalc-theme', next ? 'dark' : 'light'); } catch { /* noop */ }
+      return next;
+    });
+  }, []);
 
   // Derive available genes and samples from parsed data
   const { genes, samples } = useMemo(() => {
@@ -60,31 +75,6 @@ export function App() {
     }
   }, [rawText, refGenes, controlGroup]);
 
-  const handleExportCsv = useCallback(() => {
-    if (!result) return;
-    const csv = exportCsv(result.results);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'qpcrcalc_results.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [result]);
-
-  const handleExportPng = useCallback(() => {
-    const el = document.querySelector('.chart-panel .recharts-wrapper') as HTMLElement | null;
-    if (!el) return;
-    import('html-to-image').then(({ toPng }) => {
-      toPng(el).then(dataUrl => {
-        const a = document.createElement('a');
-        a.href = dataUrl;
-        a.download = 'qpcrcalc_chart.png';
-        a.click();
-      });
-    });
-  }, []);
-
   const toggleRef = (gene: string) => {
     setRefGenes(prev =>
       prev.includes(gene) ? prev.filter(g => g !== gene) : [...prev, gene],
@@ -101,16 +91,15 @@ export function App() {
     <div className="app" data-theme={dark ? 'dark' : 'light'}>
       <Toolbar
         dark={dark}
-        onToggleDark={() => setDark(d => !d)}
+        onToggleDark={toggleDark}
         genes={genes}
         refGenes={refGenes}
         onToggleRef={toggleRef}
         samples={samples}
         controlGroup={controlGroup}
         onSetControl={setControlGroup}
-        onExportCsv={handleExportCsv}
-        onExportPng={handleExportPng}
         onLoadSample={handleLoadSample}
+        onUploadFile={setRawText}
       />
       <DataEntry value={rawText} onChange={setRawText} />
       {result && (

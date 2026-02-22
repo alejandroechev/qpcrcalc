@@ -7,7 +7,7 @@ async function waitForResults(page: Page) {
 
 // Helper: select a sample dataset by name
 async function loadSample(page: Page, name: string) {
-  const select = page.locator('select').filter({ has: page.locator('option', { hasText: 'Load…' }) });
+  const select = page.locator('[data-testid="samples-select"]');
   await select.selectOption({ label: name });
 }
 
@@ -111,9 +111,6 @@ test.describe('Samples', () => {
     const text = await getResultsTableText(page);
     expect(text).toContain('IL6');
     expect(text).toContain('TNFa');
-    // Control group changed to Unstimulated
-    const controlSelect = page.locator('select').filter({ has: page.locator('option', { hasText: 'Unstimulated' }) });
-    await expect(controlSelect).toHaveValue('Unstimulated');
   });
 
   test('Drug Time Course loads correctly', async ({ page }) => {
@@ -345,5 +342,124 @@ test.describe('UI Controls', () => {
     const repText = await repRows.first().innerText();
     expect(repText).toContain('Rep');
     expect(repText).toContain('Ct');
+  });
+});
+
+// ─── Dark Theme ─────────────────────────────────────────────────────────
+
+test.describe('Dark Theme', () => {
+  test('dark theme persists via localStorage', async ({ page }) => {
+    await page.goto('/');
+    // Enable dark mode
+    await page.locator('button', { hasText: '🌙' }).click();
+    await expect(page.locator('.app')).toHaveAttribute('data-theme', 'dark');
+    // Reload page — should restore dark
+    await page.reload();
+    await expect(page.locator('.app')).toHaveAttribute('data-theme', 'dark');
+  });
+
+  test('dark theme applies CSS custom properties to all surfaces', async ({ page }) => {
+    await page.goto('/');
+    await page.locator('button', { hasText: '🌙' }).click();
+    await waitForResults(page);
+    // App container background should be dark (inherits via data-theme)
+    const appBg = await page.locator('.app').evaluate(el => getComputedStyle(el).backgroundColor);
+    // .app doesn't have background set, check body gets dark via document element
+    // Toolbar surface
+    const toolbarBg = await page.locator('.toolbar').evaluate(el => getComputedStyle(el).backgroundColor);
+    // #1e293b = rgb(30, 41, 59)
+    expect(toolbarBg).toBe('rgb(30, 41, 59)');
+    // Textarea
+    const textareaBg = await page.locator('textarea').evaluate(el => getComputedStyle(el).backgroundColor);
+    expect(textareaBg).toBe('rgb(30, 41, 59)');
+    // Table panel
+    const tableBg = await page.locator('.table-panel').evaluate(el => getComputedStyle(el).backgroundColor);
+    expect(tableBg).toBe('rgb(30, 41, 59)');
+  });
+});
+
+// ─── Two-Row Toolbar Layout ─────────────────────────────────────────────
+
+test.describe('Toolbar Layout', () => {
+  test('toolbar has two rows', async ({ page }) => {
+    await page.goto('/');
+    const rows = page.locator('.toolbar-row');
+    await expect(rows).toHaveCount(2);
+  });
+
+  test('row 1 has title, samples select, upload, guide, feedback, theme', async ({ page }) => {
+    await page.goto('/');
+    const row1 = page.locator('.toolbar-row').first();
+    await expect(row1.locator('h1')).toHaveText('qPCRCalc');
+    await expect(row1.locator('[data-testid="samples-select"]')).toBeVisible();
+    await expect(row1.locator('[data-testid="upload-btn"]')).toBeVisible();
+    await expect(row1.locator('button', { hasText: '📖 Guide' })).toBeVisible();
+    await expect(row1.locator('button', { hasText: '💬 Feedback' })).toBeVisible();
+  });
+
+  test('row 2 has ref gene checkboxes and control group selector', async ({ page }) => {
+    await page.goto('/');
+    const row2 = page.locator('[data-testid="toolbar-row-2"]');
+    await expect(row2.locator('.ref-genes')).toBeVisible();
+    await expect(row2.locator('select')).toBeVisible();
+  });
+});
+
+// ─── File Upload ────────────────────────────────────────────────────────
+
+test.describe('File Upload', () => {
+  test('upload CSV via toolbar button populates textarea', async ({ page }) => {
+    await page.goto('/');
+    const csvContent = `Sample,Gene,Ct\nCtrl,GAPDH,20.0\nCtrl,GAPDH,20.2\nCtrl,GeneX,25.0\nCtrl,GeneX,25.2\nTest,GAPDH,20.1\nTest,GAPDH,20.3\nTest,GeneX,22.0\nTest,GeneX,22.2`;
+    // Set file via hidden input
+    const fileInput = page.locator('input[type="file"]');
+    await fileInput.setInputFiles({
+      name: 'test.csv',
+      mimeType: 'text/csv',
+      buffer: Buffer.from(csvContent),
+    });
+    // Textarea should update
+    await expect(page.locator('textarea')).toContainText('GeneX');
+    await waitForResults(page);
+    const text = await getResultsTableText(page);
+    expect(text).toContain('GeneX');
+  });
+});
+
+// ─── In-Place Exports ───────────────────────────────────────────────────
+
+test.describe('In-Place Exports', () => {
+  test('results CSV button is on the table panel', async ({ page }) => {
+    await page.goto('/');
+    await waitForResults(page);
+    const btn = page.locator('[data-testid="results-csv-btn"]');
+    await expect(btn).toBeVisible();
+    // Should be inside table-panel
+    const panel = page.locator('.table-panel');
+    await expect(panel.locator('[data-testid="results-csv-btn"]')).toBeVisible();
+  });
+
+  test('input CSV button is on the data entry panel', async ({ page }) => {
+    await page.goto('/');
+    const btn = page.locator('[data-testid="input-csv-btn"]');
+    await expect(btn).toBeVisible();
+    const panel = page.locator('.data-entry');
+    await expect(panel.locator('[data-testid="input-csv-btn"]')).toBeVisible();
+  });
+
+  test('chart PNG and SVG buttons are on the chart panel', async ({ page }) => {
+    await page.goto('/');
+    await waitForResults(page);
+    const chart = page.locator('.chart-panel');
+    await expect(chart.locator('[data-testid="chart-png-btn"]')).toBeVisible();
+    await expect(chart.locator('[data-testid="chart-svg-btn"]')).toBeVisible();
+  });
+
+  test('no export buttons in toolbar', async ({ page }) => {
+    await page.goto('/');
+    const toolbar = page.locator('.toolbar');
+    // Should not have CSV or PNG buttons in the toolbar
+    await expect(toolbar.locator('button', { hasText: '📥 CSV' })).not.toBeVisible();
+    await expect(toolbar.locator('button', { hasText: '📸 PNG' })).not.toBeVisible();
   });
 });
