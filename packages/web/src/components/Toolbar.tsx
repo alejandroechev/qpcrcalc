@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { sampleDatasets } from '../samples/index.ts';
+import { FeedbackModal } from './FeedbackModal.tsx';
 
 interface ToolbarProps {
   dark: boolean;
@@ -27,6 +28,7 @@ export function Toolbar({
   onUploadFile,
 }: ToolbarProps) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -57,7 +59,8 @@ export function Toolbar({
         </select>
         <div className="toolbar-spacer" />
         <button onClick={() => window.open('/intro.html', '_blank')}>📖 Guide</button>
-        <button onClick={() => window.open('https://github.com/alejandroechev/qpcrcalc/issues/new', '_blank')} title="Feedback">💬 Feedback</button>
+        <button onClick={() => setShowFeedback(true)} title="Feedback">💬 Feedback</button>
+        <a href="https://github.com/alejandroechev/qpcrcalc" target="_blank" rel="noopener" className="github-link">GitHub</a>
         <button onClick={onToggleDark}>{dark ? '☀️' : '🌙'}</button>
       </div>
       {/* Row 2: Ref gene checkboxes + Control group selector */}
@@ -84,6 +87,7 @@ export function Toolbar({
           </select>
         </label>
       </div>
+      <FeedbackModal open={showFeedback} onClose={() => setShowFeedback(false)} product="qPCRCalc" />
     </div>
   );
 }
