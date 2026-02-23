@@ -8,7 +8,7 @@
 
 **Body:**
 
-If you've ever built a messy Excel sheet to calculate ΔΔCt fold changes from qPCR data, I made something for you. qPCRCalc is a free web app that does Livak method analysis — reference gene normalization, fold change calculation with proper error propagation, and replicate QC.
+I built qPCRCalc, a free web app for Livak ΔΔCt analysis with reference gene normalization, fold change calculation with error propagation, and replicate QC.
 
 It flags high CV% replicates (>2% suspicious, >5% unreliable) and Ct values >35. Just enter your Ct values, pick your reference gene and control group, and it computes everything.
 
