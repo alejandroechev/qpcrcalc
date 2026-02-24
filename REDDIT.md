@@ -4,7 +4,7 @@
 
 ## Post 1: r/labrats
 
-**Title:** I built a free browser-based qPCR delta-delta-Ct calculator — no more Excel nightmares
+**Title:** I built a free browser-based qPCR delta-delta-Ct calculator
 
 **Body:**
 
@@ -29,7 +29,7 @@ Would love feedback from people who run qPCR regularly — what would save you t
 
 Built a free browser-based tool for qPCR ΔΔCt analysis using the Livak method. It handles reference gene normalization, calculates fold changes with SEM error bars, and flags unreliable replicates by CV%.
 
-No more building fragile Excel templates or paying for analysis software. Just paste your Ct values and get results.
+Paste your Ct values and get results directly in the app. Just paste your Ct values and get results.
 
 🔗 https://qpcrcalc.vercel.app
 📂 https://github.com/alejandroechev/qpcrcalc
@@ -52,3 +52,4 @@ No install, no account, works on any device. Open source.
 📂 https://github.com/alejandroechev/qpcrcalc
 
 Feedback welcome — especially on what data import/export formats would be most useful.
+
